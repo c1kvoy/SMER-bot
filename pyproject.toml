@@ -1,0 +1,17 @@
+[tool.poetry]
+name = "smer bot"
+version = "0.1.0"
+description = ""
+authors = ["Vsevolod Enushkevich <65215566+c1kvoy@users.noreply.github.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.13"
+aiogram = "^3.16.0"
+SQLAlchemy = "^2.0.36"
+asyncpg = "^0.30.0"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
