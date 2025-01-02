@@ -1,7 +1,6 @@
-from sqlalchemy import DateTime
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker
-from sqlalchemy.orm import DeclarativeBase, mapped_column, Mapped
-from sqlalchemy import Integer, String, Text, DateTime
+from sqlalchemy.orm import DeclarativeBase, mapped_column, Mapped, relationship
+from sqlalchemy import Integer, String, Text, DateTime, ForeignKey
 from config import DATABASE_URL
 
 class Base(DeclarativeBase):
@@ -14,14 +13,22 @@ session = async_sessionmaker(bind=engine, expire_on_commit=False, autoflush=Fals
 class Diary(Base):
     __tablename__ = 'diary'
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
-    user_id: Mapped[int] = mapped_column(Integer, nullable=False)  # ID пользователя Telegram
-    time_period: Mapped[str] = mapped_column(String, nullable=False)  # Утро, День, Вечер
-    situation: Mapped[str] = mapped_column(Text, nullable=True)  # Описание ситуации
-    reaction: Mapped[str] = mapped_column(Text, nullable=True)  # Реакция
-    thoughts: Mapped[str] = mapped_column(Text, nullable=True)  # Мысли
-    emotions: Mapped[str] = mapped_column(Text, nullable=True)  # Эмоции
+    user_id: Mapped[int] = mapped_column(Integer, ForeignKey("users.user_id"), nullable=False)
+    time_period: Mapped[str] = mapped_column(String, nullable=False)
+    situation: Mapped[str] = mapped_column(Text, nullable=True)
+    reaction: Mapped[str] = mapped_column(Text, nullable=True)
+    thoughts: Mapped[str] = mapped_column(Text, nullable=True)
+    emotions: Mapped[str] = mapped_column(Text, nullable=True)
     timestamp: Mapped[DateTime] = mapped_column(DateTime, nullable=False)
 
+    user: Mapped["Users"] = relationship(back_populates="diaries")
+
+class Users(Base):
+    __tablename__ = 'users'
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    user_id: Mapped[int] = mapped_column(Integer, nullable=False, unique=True)
+
+    diaries: Mapped[list[Diary]] = relationship("Diary", back_populates="user")
 
 
 async def init_db():
