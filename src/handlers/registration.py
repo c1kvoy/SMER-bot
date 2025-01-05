@@ -5,6 +5,7 @@ from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import State, StatesGroup
 from src.database import session, Users
 from sqlalchemy.future import select
+from sqlalchemy import and_
 
 router = Router()
 
@@ -79,6 +80,13 @@ class LoginStates(StatesGroup):
 
 @router.message(Command("login"))
 async def start_login(message: Message, state: FSMContext):
+    async with session() as db:
+        query = select(Users).where(and_(Users.user_id == message.from_user.id, Users.is_logged_in == True))
+        result = await db.execute(query)
+        user = result.scalars().first()
+        if user:
+            await message.answer("Вы уже залогинены, можете, если хотите выйти пропишите /logout:")
+            return
     await message.answer("Введите ваш логин:")
     await state.set_state(LoginStates.waiting_for_login)
 
