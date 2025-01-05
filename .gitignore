@@ -1,4 +1,4 @@
 .idea/
 poetry.lock
 pyproject.toml
-config.py
+src/config.py

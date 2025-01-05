@@ -1,7 +1,7 @@
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker
 from sqlalchemy.orm import DeclarativeBase, mapped_column, Mapped, relationship
 from sqlalchemy import Integer, String, Text, DateTime, ForeignKey
-from config import DATABASE_URL
+from src.config import DATABASE_URL
 
 class Base(DeclarativeBase):
     pass
@@ -16,7 +16,7 @@ class Diary(Base):
     user_id: Mapped[int] = mapped_column(Integer, ForeignKey("users.user_id"), nullable=False)
     time_period: Mapped[str] = mapped_column(String, nullable=False)
     situation: Mapped[str] = mapped_column(Text, nullable=True)
-    reaction: Mapped[str] = mapped_column(Text, nullable=True)
+    reaction: Mapped[int] = mapped_column(Integer, nullable=True)
     thoughts: Mapped[str] = mapped_column(Text, nullable=True)
     emotions: Mapped[str] = mapped_column(Text, nullable=True)
     timestamp: Mapped[DateTime] = mapped_column(DateTime, nullable=False)
@@ -25,11 +25,13 @@ class Diary(Base):
 
 class Users(Base):
     __tablename__ = 'users'
+
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
     user_id: Mapped[int] = mapped_column(Integer, nullable=False, unique=True)
+    first_name: Mapped[str] = mapped_column(String, nullable=True)
+    last_name: Mapped[str] = mapped_column(String, nullable=True)
 
     diaries: Mapped[list[Diary]] = relationship("Diary", back_populates="user")
-
 
 async def init_db():
     async with engine.begin() as conn:
