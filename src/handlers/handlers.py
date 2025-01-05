@@ -97,6 +97,7 @@ async def chose_reaction(message: Message, state: FSMContext):
         emotions=data["emotion"],
         timestamp=datetime.now(),
     )
+    await state.clear()
     async with session() as db:
         db.add(data)
         await db.commit()
