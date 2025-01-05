@@ -1,7 +1,7 @@
 import os
 from aiogram import Router
 from aiogram.filters import Command
-from aiogram.types import Message, FSInputFile
+from aiogram.types import Message, FSInputFile, ReplyKeyboardMarkup, KeyboardButton
 from src.utils.export import export_to_excel
 
 router = Router()
@@ -17,3 +17,15 @@ async def handle_export(message: Message):
     except Exception as e:
         await message.answer("Произошла ошибка при экспорте данных. Попробуйте позже.")
         print(f"Ошибка при экспорте данных: {e}")
+    keyboard = ReplyKeyboardMarkup(
+        keyboard=[
+            [KeyboardButton(text="/add")],
+            [KeyboardButton(text="/average")],
+            [KeyboardButton(text="/export")]
+        ],
+        resize_keyboard=True
+    )
+    await message.answer(
+        "Что вы хотите сделать дальше?",
+        reply_markup=keyboard
+    )

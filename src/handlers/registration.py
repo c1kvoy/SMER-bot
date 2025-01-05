@@ -1,5 +1,5 @@
 from aiogram import Router
-from aiogram.types import Message
+from aiogram.types import Message, ReplyKeyboardMarkup, KeyboardButton
 from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import State, StatesGroup
@@ -24,6 +24,7 @@ async def start_registration(message: Message, state: FSMContext):
 @router.message(RegistrationStates.waiting_for_login)
 async def process_login(message: Message, state: FSMContext):
     login = message.text.strip()
+    if message.text[0] == "/": return
     async with session() as db:
         query = select(Users).where(Users.login == login)
         result = await db.execute(query)
@@ -54,6 +55,18 @@ async def process_password(message: Message, state: FSMContext):
         await db.commit()
 
     await message.answer(f"Спасибо, {login}! Вы успешно зарегистрированы.")
+    keyboard = ReplyKeyboardMarkup(
+        keyboard=[
+            [KeyboardButton(text="/add")],
+            [KeyboardButton(text="/average")],
+            [KeyboardButton(text="/export")]
+        ],
+        resize_keyboard=True
+    )
+    await message.answer(
+        "Что вы хотите сделать дальше?",
+        reply_markup=keyboard
+    )
     await state.clear()
 
 
@@ -86,7 +99,18 @@ async def start_login(message: Message, state: FSMContext):
         user = result.scalars().first()
         if user:
             await message.answer("Вы уже залогинены, можете, если хотите выйти пропишите /logout:")
-            return
+            keyboard = ReplyKeyboardMarkup(
+                keyboard=[
+                    [KeyboardButton(text="/add")],
+                    [KeyboardButton(text="/average")],
+                    [KeyboardButton(text="/export")]
+                ],
+                resize_keyboard=True
+            )
+            await message.answer(
+                "Что вы хотите сделать дальше?",
+                reply_markup=keyboard
+            )
     await message.answer("Введите ваш логин:")
     await state.set_state(LoginStates.waiting_for_login)
 
@@ -123,6 +147,18 @@ async def process_password(message: Message, state: FSMContext):
             user.is_logged_in = True
             await db.commit()
             await message.answer("Вы успешно вошли в систему.")
+            keyboard = ReplyKeyboardMarkup(
+                keyboard=[
+                    [KeyboardButton(text="/add")],
+                    [KeyboardButton(text="/average")],
+                    [KeyboardButton(text="/export")]
+                ],
+                resize_keyboard=True
+            )
+            await message.answer(
+                "Что вы хотите сделать дальше?",
+                reply_markup=keyboard
+            )
         else:
             await message.answer("Неверный пароль. Попробуйте снова или зарегистрируйтесь с помощью команды /register.")
             await state.clear()

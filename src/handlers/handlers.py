@@ -1,5 +1,6 @@
-from aiogram import Router
-from aiogram.types import Message, ReplyKeyboardMarkup, KeyboardButton
+from aiogram import Router, Bot
+from aiogram.types import Message, ReplyKeyboardMarkup, KeyboardButton, ReplyKeyboardRemove, InlineKeyboardMarkup, \
+    InlineKeyboardButton, CallbackQuery
 from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import State, StatesGroup
@@ -50,10 +51,10 @@ async def start_add_entry(message: Message, state: FSMContext):
 @router.message(AddDiaryState.time_period)
 async def chose_period(message: Message, state: FSMContext):
     if message.text not in ["Утро", "День", "Вечер"]:
-        await message.answer("Пожалуйста, выберите одно из значений: Утро, День или Вечер.")
+        await message.answer("Пожалуйста, выберите одно из значений: Утро, День или Вечер")
         return
     await state.update_data(time_period=message.text)
-    await message.answer("Опишите ситуацию, которая произошла")
+    await message.answer("Опишите ситуацию, которая произошла", reply_markup=ReplyKeyboardRemove())
     await state.set_state(AddDiaryState.situation)
 
 
@@ -76,11 +77,11 @@ async def chose_emotion(message: Message, state: FSMContext):
     await state.update_data(emotion=message.text)
     keyboard = ReplyKeyboardMarkup(
         keyboard=[
-            [KeyboardButton(text="😭")],
-            [KeyboardButton(text="🙁")],
-            [KeyboardButton(text="😐")],
-            [KeyboardButton(text="🙂")],
-            [KeyboardButton(text="🤩")]
+            [KeyboardButton(text="1.😭")],
+            [KeyboardButton(text="2.🙁")],
+            [KeyboardButton(text="3.😐")],
+            [KeyboardButton(text="4.🙂")],
+            [KeyboardButton(text="5.🤩")]
         ],
         resize_keyboard=True
     )
@@ -90,7 +91,10 @@ async def chose_emotion(message: Message, state: FSMContext):
 
 @router.message(AddDiaryState.reaction)
 async def chose_reaction(message: Message, state: FSMContext):
-    hm = {"😭": 1, "🙁": 2, "😐": 3 ,"🙂": 4, "🤩":5}
+    hm = {"1.😭": 1, "2.🙁": 2, "3.😐": 3 ,"4.🙂": 4, "5.🤩":5}
+    if message.text not in hm.keys():
+        await message("Вы должны выбрать один из смайликов")
+        return
     await state.update_data(reaction=hm[message.text])
     data = await state.get_data()
     async with session() as db:
@@ -112,4 +116,21 @@ async def chose_reaction(message: Message, state: FSMContext):
     async with session() as db:
         db.add(diary_entry)
         await db.commit()
-    await message.answer("Спасибо что поделились, запись добавлена в ваш дневник.")
+    await message.answer(
+        "Спасибо что поделились, запись добавлена в ваш дневник.",
+        reply_markup=ReplyKeyboardRemove()
+    )
+    keyboard = ReplyKeyboardMarkup(
+        keyboard=[
+            [KeyboardButton(text="/add")],
+            [KeyboardButton(text="/average")],
+            [KeyboardButton(text="/export")]
+        ],
+        resize_keyboard=True
+    )
+    await message.answer(
+        "Что вы хотите сделать дальше?",
+        reply_markup=keyboard
+    )
+
+
