@@ -15,10 +15,13 @@ dp = Dispatcher(storage=storage)
 
 
 async def main():
-    commands = [BotCommand(command='register', description='Регистрация'),
-                BotCommand(command='start', description='Начало диалога'),
+    commands = [
                 BotCommand(command='add', description='Добавление записи'),
-                BotCommand(command='export', description='Экспорт дневника в Excel')]
+                BotCommand(command='export', description='Экспорт дневника в Excel'),
+                BotCommand(command='register', description='Регистрация'),
+                BotCommand(command='login', description='Вход в аккаунт'),
+                BotCommand(command='logout', description='Выход из аккаунта')
+                ]
     await bot.set_my_commands(commands, BotCommandScopeDefault())
     await init_db()
     setup_reminders(bot)

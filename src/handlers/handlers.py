@@ -5,6 +5,11 @@ from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import State, StatesGroup
 from datetime import datetime
 
+from sqlalchemy import select
+from sqlalchemy import and_
+
+from src.handlers.registration import LoginStates
+
 
 from src.database import session, Diary, Users
 
@@ -88,7 +93,13 @@ async def chose_reaction(message: Message, state: FSMContext):
     hm = {"😭": 1, "🙁": 2, "😐": 3 ,"🙂": 4, "🤩":5}
     await state.update_data(reaction=hm[message.text])
     data = await state.get_data()
-    data = Diary(
+    async with session() as db:
+        query = select(Users).where(and_(Users.user_id == message.from_user.id, Users.is_logged_in == True))
+        result = await db.execute(query)
+        user = result.scalars().first()
+
+    diary_entry = Diary(
+        login=user.login,
         user_id=message.from_user.id,
         time_period=data["time_period"],
         situation=data["situation"],
@@ -99,6 +110,6 @@ async def chose_reaction(message: Message, state: FSMContext):
     )
     await state.clear()
     async with session() as db:
-        db.add(data)
+        db.add(diary_entry)
         await db.commit()
-    await message.answer("Спасибо что поделились, запись добавлена в ваш дневник")
+    await message.answer("Спасибо что поделились, запись добавлена в ваш дневник.")
