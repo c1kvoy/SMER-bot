@@ -62,7 +62,7 @@ async def handle_logout(message: Message):
     user_id = message.from_user.id
 
     async with session() as db:
-        query = select(Users).where(Users.user_id == user_id and Users.is_logged_in == True)
+        query = select(Users).where(and_(Users.user_id == user_id, Users.is_logged_in == True))
         result = await db.execute(query)
         user = result.scalars().first()
 
