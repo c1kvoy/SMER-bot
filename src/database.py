@@ -35,6 +35,15 @@ class Users(Base):
 
     diaries: Mapped[list["Diary"]] = relationship("Diary", back_populates="user")
 
+class Messages(Base):
+    __tablename__ = 'messages'
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    user_id: Mapped[int] = mapped_column(Integer, nullable=False)
+    text: Mapped[str] = mapped_column(Text, nullable=True)
+    target: Mapped[str] = mapped_column(Text, nullable=True)
+
+
 async def init_db():
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)

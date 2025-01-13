@@ -2,15 +2,17 @@ from aiogram import Router
 from aiogram.types import Message, ReplyKeyboardMarkup, KeyboardButton
 from aiogram.filters import Command
 from datetime import datetime, timedelta
-from sqlalchemy import select, and_
-from src.database import session, Diary
+
+from requests.packages import target
+from sqlalchemy import and_
+from src.database import session, Diary, Messages
 from src.middleware.gigachat import LangChainService
+from sqlalchemy import insert, select
 
 router = Router()
 
 langchain_service = LangChainService()
 
-# Обработчик для команды "/average"
 @router.message(Command("average"))
 async def summary(message: Message):
     now = datetime.now()
@@ -79,3 +81,46 @@ async def summary(message: Message):
         "Что вы хотите сделать дальше?",
         reply_markup=keyboard
     )
+
+
+@router.message()
+async def default_message_handler(message: Message):
+
+    user_id = message.from_user.id
+    user_input = message.text
+
+    async with session() as db:
+        save_user_stmt = insert(Messages).values(
+            user_id=user_id,
+            text=user_input,
+            target="from"
+        )
+        await db.execute(save_user_stmt)
+        await db.commit()
+
+        history_stmt = (
+            select(Messages.text, Messages.target)
+            .where(Messages.user_id == user_id)
+            .order_by(Messages.id.desc())
+            .limit(10)
+        )
+        result = await db.execute(history_stmt)
+        history = []
+        for row in result:
+            history.append([row.text, row.target])
+
+    response = await langchain_service.process_user_message(
+        user_history=history,
+        user_input=user_input
+    )
+
+    async with session() as db:
+        save_bot_stmt = insert(Messages).values(
+            user_id=user_id,
+            text=response,
+            target="to"
+        )
+        await db.execute(save_bot_stmt)
+        await db.commit()
+
+    await message.answer(response)
