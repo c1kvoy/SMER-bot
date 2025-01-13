@@ -1,5 +1,7 @@
 from aiogram import Bot, Dispatcher
 from aiogram.types import BotCommand, BotCommandScopeDefault
+
+# from src.middleware.gigachat import get_gigachat_token
 from src.utils.reminder import setup_reminders
 from src.config import BOT_TOKEN
 from src.handlers.handlers import router

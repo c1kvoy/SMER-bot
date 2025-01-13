@@ -37,7 +37,6 @@ async def send_reminder(bot: Bot, time_period: str):
 def setup_reminders(bot: Bot):
     scheduler = AsyncIOScheduler()
 
-    # Утреннее напоминание в 9:00
     scheduler.add_job(
         send_reminder,
         "cron",
@@ -45,7 +44,6 @@ def setup_reminders(bot: Bot):
         args=[bot, "утро"]
     )
 
-    # Дневное напоминание в 13:00
     scheduler.add_job(
         send_reminder,
         "cron",
@@ -53,11 +51,11 @@ def setup_reminders(bot: Bot):
         args=[bot, "день"]
     )
 
-    # Вечернее напоминание в 20:00
+
     scheduler.add_job(
         send_reminder,
         "cron",
-        hour=20,
+        hour=21,
         args=[bot, "вечер"]
     )
 

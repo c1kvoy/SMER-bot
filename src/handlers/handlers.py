@@ -1,6 +1,5 @@
-from aiogram import Router, Bot
-from aiogram.types import Message, ReplyKeyboardMarkup, KeyboardButton, ReplyKeyboardRemove, InlineKeyboardMarkup, \
-    InlineKeyboardButton, CallbackQuery
+from aiogram import Router
+from aiogram.types import Message, ReplyKeyboardMarkup, KeyboardButton, ReplyKeyboardRemove
 from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import State, StatesGroup
@@ -9,7 +8,6 @@ from datetime import datetime
 from sqlalchemy import select
 from sqlalchemy import and_
 
-from src.handlers.registration import LoginStates
 
 
 from src.database import session, Diary, Users
